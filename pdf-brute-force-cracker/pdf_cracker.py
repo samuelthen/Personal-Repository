@@ -2,6 +2,12 @@ import json
 import pikepdf
 from tqdm import tqdm
 import itertools
+import argparse
+
+# Argument parser setup
+parser = argparse.ArgumentParser(description="PDF Password Cracker")
+parser.add_argument('pdf_file', type=str, help='The path to the PDF file to decrypt')
+args = parser.parse_args()
 
 # Load configuration
 with open('config.json', 'r') as file:
@@ -26,7 +32,7 @@ if total_length is None:
 
         for password in tqdm(passwords, f"Trying passwords of length {length + len(prefix) + len(suffix)}"):
             try:
-                with pikepdf.open("sample.pdf", password=password) as pdf:
+                with pikepdf.open(args.pdf_file, password=password) as pdf:
                     print("\n[+] Password found:", password)
                     password_found = True
                     break
@@ -44,13 +50,12 @@ else:
 
     for password in tqdm(passwords, "Decrypting PDF"):
         try:
-            with pikepdf.open("sample.pdf", password=password) as pdf:
+            with pikepdf.open(args.pdf_file, password=password) as pdf:
                 print("\n[+] Password found:", password)
+                password_found = True
                 break
         except pikepdf.PasswordError:
             continue
 
-if not password_found and total_length is None:
-    print("[-] Password not found. Tried all lengths up to 20.")
-elif not password_found:
+if not password_found:
     print("[-] Password not found.")
